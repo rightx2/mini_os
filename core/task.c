@@ -1,8 +1,8 @@
 /********************************************************
  * Filename: core/task.c
- * 
+ *
  * Author: parkjy, RTOSLab. SNU.
- * 
+ *
  * Description: task management.
  ********************************************************/
 #include <core/eos.h>
@@ -21,7 +21,12 @@ static _os_node_t *_os_ready_queue[LOWEST_PRIORITY + 1];
  */
 static eos_tcb_t *_os_current_task;
 
-int32u_t eos_create_task(eos_tcb_t *task, addr_t sblock_start, size_t sblock_size, void (*entry)(void *arg), void *arg, int32u_t priority) {
+int32u_t eos_create_task(eos_tcb_t *task,
+						 addr_t sblock_start,
+						 size_t sblock_size,
+						 void (*entry)(void *arg),
+						 void *arg, int32u_t priority)
+{
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
 }
 

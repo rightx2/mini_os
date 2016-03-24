@@ -3,7 +3,7 @@
 
 typedef struct _os_context {
 	/* low address */
-	/* high address */	
+	/* high address */
 } _os_context_t;
 
 void print_context(addr_t context) {
@@ -15,7 +15,12 @@ void print_context(addr_t context) {
 	//...
 }
 
-addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(void *), void *arg) {
+addr_t _os_create_context(addr_t stack_base,
+                          size_t stack_size,
+                          void (*entry)(void *),
+                          void *arg)
+{
+
 }
 
 void _os_restore_context(addr_t sp) {
