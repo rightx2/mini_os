@@ -5,14 +5,27 @@ static eos_tcb_t tcb2;
 static int8u_t stack1[8096];
 static int8u_t stack2[8096];
 
+/* task1 function -print number 1 to 20 repeatedly */
 static void print_number(void *arg) {
-	while (1) {
-	}
+	int i= 0;
+    while(++i) {
+        printf("%d", i);
+        eos_schedule();// 태스크1 수행중단, 태스크2 수행재개
+        if (i== 20) {
+            i= 0;
+        }
+    }
 }
 
 static void print_alphabet(void *arg) {
-	while (1) {
-	}
+	int i= 96;
+    while(++i) {
+        printf("%c", i);
+        eos_schedule(); // 태스크2 수행중단, 태스크1 수행재개
+        if (i== 122) {
+            i= 96;
+        }
+    }
 }
 
 void eos_user_main() {
