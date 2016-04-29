@@ -25,9 +25,27 @@ int32u_t eos_create_task(eos_tcb_t *task,
 						 addr_t sblock_start,
 						 size_t sblock_size,
 						 void (*entry)(void *arg),
-						 void *arg, int32u_t priority)
+						 void *arg,
+						 int32u_t priority)
 {
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
+    task->sp = _os_create_context(sblock_start, sblock_size, entry, arg);
+    task->status = READY;
+
+    task->node.ptr_data = task;
+    task->node.priority = priority;
+
+    _os_add_node_tail(&_os_ready_queue[priority], &(task->node));
+
+    // Print 'priority of the task' in the certain 'pri queue'
+    // int pri = 0;
+    // _os_node_t* cur_node = _os_ready_queue[pri];
+    // if (cur_node != NULL) {
+    //  do {
+    //      PRINT("xxxxx %d\n", cur_node->priority);
+    //      cur_node = cur_node->next;
+    //  } while(cur_node != _os_ready_queue[pri]);
+    // }
 }
 
 int32u_t eos_destroy_task(eos_tcb_t *task) {
