@@ -86,6 +86,20 @@ addr_t _os_create_context(addr_t stack_base,
 }
 
 void _os_restore_context(addr_t sp) {
+    __asm__ __volatile__ ("\
+        movl %0, %%esp; \
+        popl %%edi;\
+        popl %%esi;\
+        popl %%ebp;\
+        popl %%ebx;\
+        popl %%edx;\
+        popl %%ecx;\
+        popl %%eax;\
+        popl _eflags;\
+        ret"                /* ret --> popl %eip + return */
+        :                  /*no output*/
+        :"m"(sp)          /*input*/
+    );
 }
 
 addr_t _os_save_context() {
