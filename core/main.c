@@ -1,8 +1,8 @@
 /********************************************************
  * Filename: core/main.c
- * 
+ *
  * Author: parkjy, RTOSLab. SNU.
- * 
+ *
  * Description: main task is OS.
  * After initialization, this task enters idle loop and never returns.
  ********************************************************/
@@ -19,13 +19,13 @@ static int8u_t idle_stack[8096];		// stack for the idle task
 void _os_initialization() {
 	_os_multitasking = 0;
 	eos_disable_interrupt();
-	
+
 	// Initialize subsystems.
-	_os_init_hal();
-	_os_init_icb_table();
+	// _os_init_hal();
+	// _os_init_icb_table();
 	_os_init_scheduler();
 	_os_init_task();
-	_os_init_timer();
+	// _os_init_timer();
 
 	// Create idle task.
 	PRINT("creating idle task.\n");

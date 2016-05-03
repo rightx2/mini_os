@@ -41,6 +41,7 @@ addr_t _os_create_context(addr_t stack_base,
     // PRINT("reg1  =0x%p\n", stack_base);
 
     // 4 bytes chois
+    // printf("stack_base : %p\n", stack_base);
     addr_t sp = stack_base + stack_size;
     sp -= sizeof(int32u_t);
 
@@ -62,8 +63,8 @@ addr_t _os_create_context(addr_t stack_base,
     *(int32u_t*)sp = NULL;            // ebx
     sp -= sizeof(int32u_t);
 
-    *(int32u_t*)sp = NULL;            // esp
-    sp -= sizeof(int32u_t);
+    // *(int32u_t*)sp = NULL;            // esp --> 굳이 저장할 필요없긴함
+    // sp -= sizeof(int32u_t);
 
     *(int32u_t*)sp = NULL;            // ebp
     sp -= sizeof(int32u_t);

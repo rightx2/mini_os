@@ -29,7 +29,9 @@ int32u_t eos_create_task(eos_tcb_t *task,
 						 int32u_t priority)
 {
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
+    // printf("sblock_start : %p\n", sblock_start);
     task->sp = _os_create_context(sblock_start, sblock_size, entry, arg);
+    // printf("%p\n", task->sp);
     task->status = READY;
 
     task->node.ptr_data = task;
