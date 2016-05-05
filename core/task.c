@@ -30,11 +30,12 @@ int32u_t eos_create_task(eos_tcb_t *task,
 {
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
     task->sp = _os_create_context(sblock_start, sblock_size, entry, arg);
-    task->status = READY;
+    task->status = READY;       // not currently used
 
     task->node.ptr_data = task;
     task->node.priority = priority;
 
+    // Add task(node) in ready queue according to priority
     _os_add_node_tail(&_os_ready_queue[priority], &(task->node));
 
     // Print 'priority of the task' in the specific 'pri queue'
@@ -56,12 +57,16 @@ void eos_schedule() {
     if (_os_current_task){
         addr_t saved_sp = _os_save_context();
 
-        //_os_saved_context() returns stack_pointer
-        // But when it restore(pop) all pushed values to its corresponding registers in _os_restore_context,
-        // eax is set to zero, so it returns NULL
+        /*
+            _os_saved_context() returns stack_pointer, which is not NULL.
+            But when all pushed values are restored to its corresponding registers in _os_restore_context,
+            eax is set to zero, which is NULL
+        */
         if (saved_sp == NULL){
+            // when returned from _os_restore_context, this section will be executed
             return;
         }
+
         // Save saved_sp in tcb
         _os_current_task->sp = saved_sp;
 

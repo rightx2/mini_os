@@ -6,13 +6,12 @@ typedef struct _os_context {
     addr_t edi_t;
     addr_t esi_t;
     addr_t ebp_t;
-    addr_t esp_t;
     addr_t ebx_t;
     addr_t edx_t;
     addr_t ecx_t;
     addr_t eax_t;
     addr_t eflags;
-    addr_t eip;
+    addr_t eip_t;
     /* high address */
 } _os_context_t;
 
@@ -30,50 +29,37 @@ addr_t _os_create_context(addr_t stack_base,
                           void (*entry)(void *),
                           void *arg)
 {
-    // 4bytes
-    // addr_t *sp = (addr_t *)(stack_base + stack_size);
-    // printf("%p\n",sp--);
-    // printf("%p\n",sp--);
-    // printf("%p\n",(int8u_t*)stack_base);
+    /*
+        Initialize default context's register values
+    */
+    _os_context_t context;
+    context.eip_t = entry;
+    context.eflags = NULL;
+    context.eax_t = NULL;
+    context.ecx_t = NULL;
+    context.edx_t = NULL;
+    context.ebx_t = NULL;
+    context.ebp_t = NULL;
+    context.esi_t = NULL;
+    context.edi_t = NULL;
 
+    /*
+        Go to top of the stack and move stack pointer
+    */
     addr_t sp = stack_base + stack_size;
-    sp -= sizeof(int32u_t);
+    sp -= sizeof(_os_context_t);
 
-    *(int32u_t*)sp = entry;           // eip
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // eflags
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // eax
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // ecx
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // edx
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // ebx
-    sp -= sizeof(int32u_t);
-
-    // *(int32u_t*)sp = NULL;            // esp --> 굳이 저장할 필요없긴함
-    // sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // ebp
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // esi
-    sp -= sizeof(int32u_t);
-
-    *(int32u_t*)sp = NULL;            // edi
+    /*
+        Push context register values
+    */
+    *(_os_context_t*)sp = context;
 
     return sp;
 }
 
 void _os_restore_context(addr_t sp) {
     /*
-        Pop pushed register values to corresponding registers and restart from where it stopped
+        Store sp(argument) into esp and pop pushed register values to corresponding registers and restart from where it stopped
     */
     __asm__ __volatile__ ("\
         movl %0, %%esp; \
@@ -98,8 +84,8 @@ addr_t _os_save_context() {
     __asm__ __volatile__("movl %0, %%eax;"::"n"(0));
 
     /*
-        Push resume point which will resume from stop point of the task when context is restored
-        Push eflags and registers
+        Push 'resume_point' which will resume from stop point of the task when context is restored.
+        And then, push eflags and registers
     */
     __asm__ __volatile__ ("\
         push $resume_point;\
@@ -112,19 +98,18 @@ addr_t _os_save_context() {
         push %%esi;\
         push %%edi;"
         :                 /*no output*/
-        :                 /*input*/
+        :                 /*no input*/
     );
 
     /*
-        Store currnet stack pointer in %esp for return value
+        Store current stack pointer in %esp for returning
     */
     __asm__ __volatile__("movl %%esp, %%eax;"::);
 
 
     /*
-        Push old %ebp and %eip then store %esp in %ebp so that it make
-        current stack looked like starting new function.
-        (Because every time funcion stack is created, below procedures should be done)
+        Push old %ebp and %eip then store value of %esp in %ebp so looks like starting new function.
+        (Because everytime funcion stack is created, below procedures should be done)
             1. push return address & old ebp
             2. movl %%esp, %%ebp
         By doing so, it protects all pushed register values and return safely to eos_schedule()
@@ -134,18 +119,18 @@ addr_t _os_save_context() {
         push 0(%%ebp);\
         movl %%esp, %%ebp;"
         :                 /*no output*/
-        :                 /*input*/
+        :                 /*no input*/
     );
 
     /*
-        Define resume_point so that restored task restarts from where it stopped
+        Define 'resume_point ' so that restored task restarts from where it stopped
     */
     __asm__ __volatile__("\
         resume_point:\
             leave;\
             ret;"
         :                 /*no output*/
-        :                 /*input*/
+        :                 /*no input*/
     );
 
 }

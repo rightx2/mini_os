@@ -82,7 +82,6 @@ typedef struct tcb {
    // char     task_name[200];
    // uint32   receive_siganl ;
    // uint32   wait_signal ;
-   // int      priority;
    void        *sp;
    int8u_t     status;
    _os_node_t  node;
