@@ -36,12 +36,6 @@ addr_t _os_create_context(addr_t stack_base,
     // printf("%p\n",sp--);
     // printf("%p\n",(int8u_t*)stack_base);
 
-    // 똑같다.
-    // PRINT("reg1  =0x%x\n", stack_base);
-    // PRINT("reg1  =0x%p\n", stack_base);
-
-    // 4 bytes chois
-    // printf("stack_base : %p\n", stack_base);
     addr_t sp = stack_base + stack_size;
     sp -= sizeof(int32u_t);
 
@@ -75,17 +69,12 @@ addr_t _os_create_context(addr_t stack_base,
     *(int32u_t*)sp = NULL;            // edi
 
     return sp;
-    // printf("%p\n",sp1);
-    // printf("%p\n",sp1-sizeof(int32u_t));
-    // printf("%p\n",sp1--);
-    // printf("%p\n",sp1--);
-
-    // sp--;
-    // printf("%p\n",sp);
-    // printf("\n",sp);
 }
 
 void _os_restore_context(addr_t sp) {
+    /*
+        Pop pushed register values to corresponding registers and restart from where it stopped
+    */
     __asm__ __volatile__ ("\
         movl %0, %%esp; \
         popl %%edi;\
@@ -96,11 +85,67 @@ void _os_restore_context(addr_t sp) {
         popl %%ecx;\
         popl %%eax;\
         popl _eflags;\
-        ret"                /* ret --> popl %eip + return */
+        ret"
         :                  /*no output*/
         :"m"(sp)          /*input*/
     );
 }
 
 addr_t _os_save_context() {
+    /*
+        Store zero in eax before push it
+    */
+    __asm__ __volatile__("movl %0, %%eax;"::"n"(0));
+
+    /*
+        Push resume point which will resume from stop point of the task when context is restored
+        Push eflags and registers
+    */
+    __asm__ __volatile__ ("\
+        push $resume_point;\
+        push _eflags;\
+        push %%eax;\
+        push %%ecx;\
+        push %%edx;\
+        push %%ebx;\
+        push %%ebp;\
+        push %%esi;\
+        push %%edi;"
+        :                 /*no output*/
+        :                 /*input*/
+    );
+
+    /*
+        Store currnet stack pointer in %esp for return value
+    */
+    __asm__ __volatile__("movl %%esp, %%eax;"::);
+
+
+    /*
+        Push old %ebp and %eip then store %esp in %ebp so that it make
+        current stack looked like starting new function.
+        (Because every time funcion stack is created, below procedures should be done)
+            1. push return address & old ebp
+            2. movl %%esp, %%ebp
+        By doing so, it protects all pushed register values and return safely to eos_schedule()
+    */
+    __asm__ __volatile__("\
+        push 4(%%ebp);\
+        push 0(%%ebp);\
+        movl %%esp, %%ebp;"
+        :                 /*no output*/
+        :                 /*input*/
+    );
+
+    /*
+        Define resume_point so that restored task restarts from where it stopped
+    */
+    __asm__ __volatile__("\
+        resume_point:\
+            leave;\
+            ret;"
+        :                 /*no output*/
+        :                 /*input*/
+    );
+
 }
