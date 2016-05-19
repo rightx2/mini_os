@@ -31,23 +31,15 @@ int32u_t eos_create_task(eos_tcb_t *task,
     PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
     task->sp = _os_create_context(sblock_start, sblock_size, entry, arg);
     task->status = READY;       // not currently used
+    task->priority = priority;  // task's priority
 
+    task->ready_q_node.ptr_data = task;
+    task->ready_q_node.priority = 0; // priority among ready_q_node.
+                                     // In ready_queue, it is zero as a Default, which means FIFO
+    _os_set_ready(task->priority);
 
-    task->node.ptr_data = task;
-    task->node.priority = priority;
-    _os_set_ready(priority);
-
-    // Add task(node) in ready queue according to priority
-    _os_add_node_tail(&_os_ready_queue[priority], &(task->node));
-    // Print 'priority of the task' in the specific 'pri queue'
-    // int pri = 0;
-    // _os_node_t* cur_node = _os_ready_queue[pri];
-    // if (cur_node != NULL) {
-    //  do {
-    //      PRINT("xxxxx %d\n", cur_node->priority);
-    //      cur_node = cur_node->next;
-    //  } while(cur_node != _os_ready_queue[pri]);
-    // }
+    // Add task(node) in READY queue
+    _os_add_node_tail(&_os_ready_queue[task->priority], &(task->ready_q_node));
 }
 
 int32u_t eos_destroy_task(eos_tcb_t *task) {
@@ -72,7 +64,7 @@ void eos_schedule() {
         _os_current_task->sp = saved_sp;
 
         // Select next task
-        _os_current_task = _os_current_task->node.next->ptr_data;
+        _os_current_task = _os_current_task->ready_q_node.next->ptr_data;
     } else {
         int8u_t highest_priority = _os_get_highest_priority();
         _os_node_t *next_node = (_os_node_t *)_os_ready_queue[highest_priority];
