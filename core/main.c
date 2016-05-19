@@ -21,11 +21,11 @@ void _os_initialization() {
 	eos_disable_interrupt();
 
 	// Initialize subsystems.
-	// _os_init_hal();
-	// _os_init_icb_table();
+	_os_init_hal();
+	_os_init_icb_table();
 	_os_init_scheduler();
 	_os_init_task();
-	// _os_init_timer();
+	_os_init_timer();
 
 	// Create idle task.
 	PRINT("creating idle task.\n");

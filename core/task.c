@@ -28,16 +28,17 @@ int32u_t eos_create_task(eos_tcb_t *task,
 						 void *arg,
 						 int32u_t priority)
 {
-	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
+    PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
     task->sp = _os_create_context(sblock_start, sblock_size, entry, arg);
     task->status = READY;       // not currently used
 
+
     task->node.ptr_data = task;
     task->node.priority = priority;
+    _os_set_ready(priority);
 
     // Add task(node) in ready queue according to priority
     _os_add_node_tail(&_os_ready_queue[priority], &(task->node));
-
     // Print 'priority of the task' in the specific 'pri queue'
     // int pri = 0;
     // _os_node_t* cur_node = _os_ready_queue[pri];
@@ -73,8 +74,12 @@ void eos_schedule() {
         // Select next task
         _os_current_task = _os_current_task->node.next->ptr_data;
     } else {
-        // Select task in ready_queue[0]
-        _os_current_task = (eos_tcb_t *)_os_ready_queue[0]->ptr_data;
+        int8u_t highest_priority = _os_get_highest_priority();
+        _os_node_t *next_node = (_os_node_t *)_os_ready_queue[highest_priority];
+        if (next_node == NULL) {
+            return;
+        }
+        _os_current_task = next_node->ptr_data;
     }
     _os_restore_context(_os_current_task->sp);
 }
@@ -90,6 +95,7 @@ int32u_t eos_get_priority(eos_tcb_t *task) {
 }
 
 void eos_set_period(eos_tcb_t *task, int32u_t period){
+    task->period = period;
 }
 
 int32u_t eos_get_period(eos_tcb_t *task) {

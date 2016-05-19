@@ -70,7 +70,7 @@ void _os_restore_context(addr_t sp) {
         popl %%edx;\
         popl %%ecx;\
         popl %%eax;\
-        popl _eflags;\
+        popfl;\
         ret"
         :                  /*no output*/
         :"m"(sp)          /*input*/
@@ -89,7 +89,7 @@ addr_t _os_save_context() {
     */
     __asm__ __volatile__ ("\
         push $resume_point;\
-        push _eflags;\
+        pushfl;\
         push %%eax;\
         push %%ecx;\
         push %%edx;\

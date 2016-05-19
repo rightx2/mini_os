@@ -84,6 +84,7 @@ typedef struct tcb {
    // uint32   wait_signal ;
    void        *sp;
    int8u_t     status;
+   int32u_t    period;
    _os_node_t  node;
 } eos_tcb_t;
 
