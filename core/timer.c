@@ -46,7 +46,8 @@ eos_counter_t* eos_get_system_timer() {
 
 /***
 	Everytime the timer interrupt occurs (1sec),
-	look for all tasks in alarm_queue, which should be woken up .
+	look for tasks which should be woken up and call handler of them.
+	Then, remove that node from alarm_queue.
 ***/
 void eos_trigger_counter(eos_counter_t* counter) {
 	counter->tick += 1;

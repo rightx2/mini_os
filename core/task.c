@@ -111,7 +111,7 @@ int32u_t eos_resume_task(eos_tcb_t *task) {
 
 /***
     Change state of task from RUNNING to WAITING and set alarm
-    to be woken after certain time. In order to do that, locate
+    to be woken after given time. In order to do that, locate
     alarm_node in the alarm queue of counter.
 ***/
 void eos_sleep(int32u_t tick) {
@@ -132,8 +132,8 @@ void eos_sleep(int32u_t tick) {
     eos_set_alarm(system_timer, cur_task_alarm, timeout, _os_wakeup_sleeping_task, _os_current_task);
 
     // Remove the task from the READY queue.
-    // 'Removing node from ready queue' could happen inside of 'eos_set_alarm()'
-    // but, 'eos_set_alarm' should do things only about 'alarm'
+    // 'Removing node from ready queue' also could happen inside of 'eos_set_alarm()'
+    // but, one function should do only one task.( = 'eos_set_alarm' should do things only about 'alarm', not about ready_queue)
     _os_remove_node(&_os_ready_queue[_os_current_task->priority], &_os_current_task->ready_q_node);
      // If not even one node left, turn off the priority bit.
     if (_os_ready_queue[_os_current_task->priority] == NULL) {
