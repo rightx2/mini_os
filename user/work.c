@@ -4,6 +4,7 @@
 int32u_t stack1[8096]; // stack for task1
 int32u_t stack2[8096]; // stack for task2
 int32u_t stack3[8096]; // stack for task3
+
 eos_tcb_t tcb1; // tcbfor task1
 eos_tcb_t tcb2; // tcbfor task2
 eos_tcb_t tcb3; // tcbfor task3
