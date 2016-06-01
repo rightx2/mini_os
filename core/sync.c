@@ -1,14 +1,17 @@
 /********************************************************
  * Filename: core/sync.c
- * 
+ *
  * Author: wsyoo, RTOSLab. SNU.
- * 
+ *
  * Description: semaphore, condition variable management.
  ********************************************************/
 #include <core/eos.h>
 
 void eos_init_semaphore(eos_semaphore_t *sem, int32u_t initial_count, int8u_t queue_type) {
 	/* initialization */
+	sem->num_of_resource = initial_count;
+	sem->wait_queue = NULL;
+	sem->queue_type = queue_type;
 }
 
 int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
