@@ -41,6 +41,7 @@ void _os_initialization() {
 	_os_multitasking = 1;
 	eos_enable_interrupt();
 
+	printf("\n\n");
 	eos_schedule();
 
 	// After finishing all initializations, OS enters loop.

@@ -15,9 +15,29 @@ void eos_init_semaphore(eos_semaphore_t *sem, int32u_t initial_count, int8u_t qu
 }
 
 int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
+	/* Write just simple semaphore mechanism without waiting(loop) mechanism*/
+	if (sem->num_of_resource > 0) {
+		sem->num_of_resource--;
+		return 1;
+	} else {
+		PRINT("Failed to get semaphore!\n");
+		// if (timeout < 0) {
+		// 	return;
+		// } else if (timeout == 0) {
+		// 	if (sem->queue_type == FIFO) {
+		// 		sem->wait_queue
+		// 	} else {	//
+
+		// 	}
+		// }
+		return 0;
+	}
 }
 
 void eos_release_semaphore(eos_semaphore_t *sem) {
+	/* Write just simple semaphore mechanism without waiting(loop) mechanism*/
+	sem->num_of_resource++;
+	PRINT("Released semaphore!\n");
 }
 
 void eos_init_condition(eos_condition_t *cond, int32u_t queue_type) {

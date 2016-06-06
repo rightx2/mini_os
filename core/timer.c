@@ -51,6 +51,7 @@ eos_counter_t* eos_get_system_timer() {
 ***/
 void eos_trigger_counter(eos_counter_t* counter) {
 	counter->tick += 1;
+	printf("\n\n");
 	PRINT("current time : %d\n", counter->tick);
 
 	// If counter's alarm_queue is empty, nothing to do.
