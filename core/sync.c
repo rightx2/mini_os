@@ -16,21 +16,27 @@ void eos_init_semaphore(eos_semaphore_t *sem, int32u_t initial_count, int8u_t qu
 
 int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
 	/* Write just simple semaphore mechanism without waiting(loop) mechanism*/
-	if (sem->num_of_resource > 0) {
-		sem->num_of_resource--;
-		return 1;
-	} else {
-		PRINT("Failed to get semaphore!\n");
-		// if (timeout < 0) {
-		// 	return;
-		// } else if (timeout == 0) {
-		// 	if (sem->queue_type == FIFO) {
-		// 		sem->wait_queue
-		// 	} else {	//
-
-		// 	}
-		// }
-		return 0;
+	while(1) {
+		if (sem->num_of_resource > 0) {
+			sem->num_of_resource--;
+			return 1;
+		} else {
+			PRINT("Failed to get semaphore!\n");
+			if (timeout < 0) {
+				return -1;
+			} else if (timeout == 0) {
+				PRINT("Wait until woken up by other process!\n\n");
+				_os_wait(&(sem->wait_queue), sem->queue_type);
+        continue;
+			} else {
+				PRINT("Wait until alarm time is up!\n");
+				eos_counter_t *timer = eos_get_system_timer();
+				// 	if (sem->queue_type == FIFO) {
+				// 		sem->wait_queue
+				// 	} else {	//
+				// 	}
+			}
+		}
 	}
 }
 
@@ -38,6 +44,10 @@ void eos_release_semaphore(eos_semaphore_t *sem) {
 	/* Write just simple semaphore mechanism without waiting(loop) mechanism*/
 	sem->num_of_resource++;
 	PRINT("Released semaphore!\n");
+	if (sem->wait_queue) {
+		PRINT("Waking up waiting task in sem's queue!\n");
+		_os_wakeup_single(&(sem->wait_queue), sem->queue_type);
+	}
 }
 
 void eos_init_condition(eos_condition_t *cond, int32u_t queue_type) {
@@ -50,7 +60,7 @@ void eos_wait_condition(eos_condition_t *cond, eos_semaphore_t *mutex) {
 	/* release acquired semaphore */
 	eos_release_semaphore(mutex);
 	/* wait on condition's wait_queue */
-	_os_wait(&cond->wait_queue);
+	//_os_wait(&cond->wait_queue);
 	/* acquire semaphore before return */
 	eos_acquire_semaphore(mutex, 0);
 }

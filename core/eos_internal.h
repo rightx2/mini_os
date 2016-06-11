@@ -1,8 +1,8 @@
 /********************************************************
  * Filename: core/eos_internal.h
- * 
+ *
  * Author: parkjy, RTOSLab. SNU.
- * 
+ *
  * Description:
  ********************************************************/
 #ifndef EOS_INTERNAL_H
@@ -75,7 +75,7 @@ extern void _os_init_timer();
 /********************************************************
  * Task Management Module
  ********************************************************/
-extern void _os_wait(_os_node_t **wait_queue);
+extern void _os_wait(_os_node_t **wait_queue, int32u_t queue_type);
 extern void _os_wakeup_single(_os_node_t **wait_queue, int32u_t suspend_type);
 extern void _os_wakeup_all(_os_node_t **wait_queue, int32u_t suspend_type);
 extern void _os_wakeup_sleeping_task(void *arg);
@@ -118,10 +118,10 @@ void _os_set_ready(int8u_t priority);
  * Create an initial context on the stack.
  * The stack_pointer is assumed as a lowest memory of the stack area.
  * The stack_size is a size of a stack.
- * 
+ *
  * If this context is resumed, the entry function will be called
  * with the argument given by the arg.
- * 
+ *
  * This function returns task context that it created.
  */
 extern addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(void *arg), void *arg);

@@ -154,10 +154,38 @@ void _os_init_task() {
 	}
 }
 
-void _os_wait(_os_node_t **wait_queue) {
+void _os_wait(_os_node_t **wait_queue, int32u_t queue_type) {
+    _os_current_task->status = WAITING;
+    _os_remove_node(&_os_ready_queue[_os_current_task->priority], &_os_current_task->ready_q_node);
+     // If not even one node left, turn off the priority bit.
+    if (_os_ready_queue[_os_current_task->priority] == NULL) {
+        _os_unset_ready(_os_current_task->priority);
+    }
+
+    if (queue_type == FIFO) {
+        _os_add_node_tail(wait_queue, &(_os_current_task->ready_q_node));
+    } else if (queue_type == PRIORITY) {
+        _os_add_node_priority(wait_queue, &(_os_current_task->ready_q_node));
+    }
+
+    eos_schedule();
 }
 
 void _os_wakeup_single(_os_node_t **wait_queue, int32u_t queue_type) {
+    // Remove from semaphore-wait queue
+    eos_tcb_t *woken_task = (*wait_queue)->ptr_data;
+    _os_remove_node(wait_queue, *wait_queue);
+
+    // set task's status as READY
+    woken_task->status = READY;
+
+    // After woken, the task should be added in READY queue
+    _os_add_node_tail(&_os_ready_queue[woken_task->priority], &(woken_task->ready_q_node));
+
+    // Set bitmap of task's priority
+    _os_set_ready(woken_task->priority);
+
+    eos_schedule();
 }
 
 void _os_wakeup_all(_os_node_t **wait_queue, int32u_t queue_type) {
