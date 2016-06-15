@@ -15,25 +15,26 @@ void eos_init_semaphore(eos_semaphore_t *sem, int32u_t initial_count, int8u_t qu
 }
 
 int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
-    /* Write just simple semaphore mechanism without waiting(loop) mechanism*/
-    int first_sleep = 1;
+    int first_sleep = 1;    // for timeout mechanism.
     while(1) {
         if (sem->num_of_resource > 0) {
             sem->num_of_resource--;
             return 1;
-        } else {
+        } else {    // if resources are not available,
             if (timeout < 0) {
                 return -1;
             } else if (timeout == 0) {
-                _os_wait(&(sem->wait_queue), sem->queue_type);
+                _os_wait(&(sem->wait_queue), sem->queue_type);  // Wait until woken up by other task
                 eos_schedule();
                 continue;
             } else {
+                // If this is not a first time to sleep, wait until woken up by other task
                 if (!first_sleep) {
                     _os_wait(&(sem->wait_queue), sem->queue_type);
                     eos_schedule();
                     continue;
                 }
+                // Set off the flag
                 first_sleep = 0;
                 eos_sleep(timeout);
             }
@@ -42,9 +43,9 @@ int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
 }
 
 void eos_release_semaphore(eos_semaphore_t *sem) {
-    /* Write just simple semaphore mechanism without waiting(loop) mechanism*/
     sem->num_of_resource++;
     if (sem->wait_queue) {
+        // If there are other task in waiting queue, wake it up
         _os_wakeup_single(&(sem->wait_queue), sem->queue_type);
     }
     eos_schedule();
