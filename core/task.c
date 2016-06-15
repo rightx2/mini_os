@@ -167,8 +167,6 @@ void _os_wait(_os_node_t **wait_queue, int32u_t queue_type) {
     } else if (queue_type == PRIORITY) {
         _os_add_node_priority(wait_queue, &(_os_current_task->ready_q_node));
     }
-
-    eos_schedule();
 }
 
 void _os_wakeup_single(_os_node_t **wait_queue, int32u_t queue_type) {
@@ -184,8 +182,6 @@ void _os_wakeup_single(_os_node_t **wait_queue, int32u_t queue_type) {
 
     // Set bitmap of task's priority
     _os_set_ready(woken_task->priority);
-
-    eos_schedule();
 }
 
 void _os_wakeup_all(_os_node_t **wait_queue, int32u_t queue_type) {
